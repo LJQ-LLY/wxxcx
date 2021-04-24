@@ -5,7 +5,7 @@
 import requests
 from bs4 import BeautifulSoup
 import re
-
+import pymysql
 
 class Main():
 
@@ -44,23 +44,32 @@ class Main():
         soup = str(soup)
         model = re.compile("<html>.*<p>(.*)</p>.*</html>", re.S)
         result = re.findall(model, soup)
+        x = result
         result = eval(result[0])[0]
+        day = eval(x[0])[1]
+        # print(day)
         kbsj = []
         for i in result:
             # print(i)
+            y = int(i['xq']) - 1
+            daytime = day[y]['rq']
+            # print(daytime)
             sksj = {
                 'kcmc': i['kcmc'],
                 'teaxms': i['teaxms'],
                 'jxcdmc': i['jxcdmc'],
                 'jcdm2': i['jcdm2'],
                 'xq': i['xq'],
-                'zc': i['zc']
+                'zc': i['zc'],
+                'daytime': daytime
             }
-            print(sksj)
+            # print(sksj)
             kbsj.append(sksj)
 
         self.zbksj.append(kbsj)
 
+
+        
 
 if __name__ == '__main__':
     main = Main()
