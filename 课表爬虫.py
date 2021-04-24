@@ -21,7 +21,7 @@ class Main():
         self.post_url = "http://210.38.250.43/login!doLogin.action"
         # self.kebiao_url = "http://210.38.250.43/xsgrkbcx!getKbRq.action?xnxqdm=202002&zc=8"
         self.data = {
-            "account": 20034480324,
+            "account": None,
             "pwd": "bGlqdW5xaS4yMDAzMDEyOA==",
             # "verifycode": ""
         }
@@ -58,7 +58,7 @@ class Main():
                 'kcmc': i['kcmc'],
                 'teaxms': i['teaxms'],
                 'jxcdmc': i['jxcdmc'],
-                'jcdm2': i['jcdm2'],
+                'jcdm': i['jcdm'],
                 'xq': i['xq'],
                 'zc': i['zc'],
                 'daytime': daytime
@@ -68,14 +68,60 @@ class Main():
 
         self.zbksj.append(kbsj)
 
+    def __getitem__(self, item):
+        self.data['account'] = item
 
-        
+
+class DB():
+
+    def __init__(self, ojb):
+        self.conn = pymysql.connect(host='localhost', port=3306, user='root', password='lijunqi.20030128',
+                                    database='kebiao')
+        self.cur = self.conn.cursor()
+        self.ojb = ojb
+        self.intosql()
+
+    def intosql(self):
+        # xh = self.ojb.data['account']
+        for i in self.sjcl():
+            # print("%s"%",".join(i))
+            sql ='''
+                    insert into kbsj
+                    (
+                        xh,kcmc,teaxms,jxcdmc,jcdm,xq,zc,daytime
+                    )values(%s)
+            '''%",".join(i)
+            # print(sql)
+            self.cur.execute(sql)
+        self.conn.commit()
+        self.cur.close()
+        self.conn.close()
+
+    def sjcl(self):
+        for i in range(len(self.ojb.zbksj)):
+            week_kb = self.ojb.zbksj[i]
+            # print(type(self.ojb.data['account']))
+            for x in week_kb:
+                str_list = [
+                    "'" + str(self.ojb.data['account']) + "'",
+                    "'" + x['kcmc'] + "'",
+                    "'" + x['teaxms'] + "'",
+                    "'" + x['jxcdmc'] + "'",
+                    "'" + x['jcdm'] + "'",
+                    "'" + x['xq'] + "'",
+                    "'" + x['zc'] + "'",
+                    "'" + x['daytime'] + "'"
+                ]
+
+                yield str_list
+
 
 if __name__ == '__main__':
     main = Main()
+    main[int(input("请输入:"))]
     url = 'http://210.38.250.43/xsgrkbcx!getKbRq.action?xnxqdm=202002&zc='
     for i in range(1, 18):
         kburl = url + str(i)
         main.request(kburl)
-
     print(main.zbksj)
+    db = DB(main)
